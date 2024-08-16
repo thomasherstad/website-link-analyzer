@@ -20,4 +20,24 @@ function getURLsFromHTML(htmlBody, baseURL) {
 };
 
 
-module.exports = { normalizeURL, getURLsFromHTML };
+async function crawlPage(currentURL){
+    let response
+    try{
+        response = await fetch(currentURL);
+    } catch (error) {
+        throw new Error(`Network error: ${error.message}`)
+    }
+    if (response.status >= 400) {
+        throw new Error(`There was an error getting the url, status ${response.status}`);
+    }
+    const contentType = response.headers.get('content-type')
+    if (!contentType || !contentType.includes('text/html')) {
+        throw new Error(`The content type is not text/html`)
+    } else {
+        const htmlBody = await response.text()
+        console.log(htmlBody)
+    }
+}
+
+
+module.exports = { normalizeURL, getURLsFromHTML, crawlPage};
