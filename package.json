@@ -1,11 +1,21 @@
-{ "name": "website-link-analyzer",
-  "version": "1.0.0",
-  "description": "",
-  "main": "main.js",
-  "scripts": {
-	"start": "node main.js",
-	"test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC"
+{
+    "name": "website-link-analyzer",
+    "version": "1.0.0",
+    "description": "",
+    "main": "main.js",
+    "scripts": {
+        "start": "node main.js",
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    },
+    "jest": {
+        "transform": {}
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "jest": "^29.7.0"
+    },
+    "dependencies": {
+        "jsdom": "^24.1.1"
+    }
 }
