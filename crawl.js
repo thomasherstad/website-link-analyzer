@@ -14,8 +14,23 @@ function normalizeURL(url){
 
 function getURLsFromHTML(htmlBody, baseURL) {
     //returns an un-normalized array of urls
+    let urls = []
     const dom = new JSDOM(htmlBody);
-    const urls = dom.window.document.querySelector('a').textContent;
+    const anchors = dom.window.document.querySelectorAll('a');
+
+    for (const anchor of anchors){
+        if (anchor.hasAttribute('href')){
+            let href = anchor.getAttribute('href')
+
+            try {
+                href = new URL(href, baseURL).href
+                urls.push(href)
+            } catch (err){
+                console.log(`${err.message}: ${href}`)
+            }
+        }
+    }
+
     return urls
 };
 
@@ -32,56 +47,50 @@ async function getHTMLFromURL(url) {
     }
     const contentType = response.headers.get('content-type')
     if (!contentType || !contentType.includes('text/html')) {
-        console.log(`The content type is not text/html`)
+        console.log(`The content-type for ${url} is not text/html`)
         return
     } else {
         const htmlBody = await response.text()
-        console.log(htmlBody)
+        //console.log(htmlBody)
+        return htmlBody
     }
 
 }
 
-async function crawlPage(baseURL, currentURL=baseURL, pages={}){
-    // Make sure the current url is on the baseURL
+async function crawlPage(baseURL, currentURL=baseURL, pages={}, alreadyCrawled=[]){
     let base = new URL(baseURL)
     let current = new URL(currentURL)
-    console.log(`Base host: ${base.host}`)
-    console.log(`Current host: ${current.host}`)
     
     if (base.host != current.host) {
-        console.log('Different hosts')
         return pages
     }
 
-    // Get a normalized version of the URL
     const normalizedURL = normalizeURL(currentURL)
-    console.log(`Normalized URL: ${currentURL}`)
 
-    // If it exists in pages for the normalized version of current, increment the count and return pages
-    // Otherwise, add an entry and set the count to 1
-    if (pages[normalizedURL]) {
+    if (pages[normalizedURL] > 0) {
         pages[normalizedURL]++
         return pages
-    } else {
-        pages[normalizedURL] = 1
     }
-    
-    // If we have gotten here, break out the logic for fetching the ucrrent URL and parsing 
-    // the html into its own function. 
-    //This will keep the crawl functionality readable and manageable.  
-    //Call the new function inside crawlPage.
-    const currentHTML = await getHTMLFromURL(currentURL)
 
-    // Assuming all went well with the fetch request in the new function, 
-    // get all the URLs from  the response body HTML
-    const  linksFound = getURLsFromHTML(currentHTML)
-    console.log(`Found these links on ${normalizedURL}: 
-    ${linksFound}`)
-    // Recursively crawl each URL you  found on the page and update the pages to keep an aggregate count
+    pages[normalizedURL] = 1
 
-    //Finally return the updated pages object
+    let currentHTML = ''
+    try {
+        currentHTML = await getHTMLFromURL(currentURL)
+    } catch (err){
+        console.log(`${err.message}`)
+        return pages
+    }
 
-}
+    const linksFound = getURLsFromHTML(currentHTML, baseURL)
+
+    for (const link of linksFound) {
+        pages = await crawlPage(baseURL, link, pages)
+
+    };
+
+    return pages;
+};
 
 
 module.exports = { normalizeURL, getURLsFromHTML, crawlPage};

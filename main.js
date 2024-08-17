@@ -10,16 +10,9 @@ async function main() {
     }
     
     const baseURL = process.argv[2]
-    let currentURL = baseURL
-    let pages = {}
-    if (process.argv[3]){
-        currentURL =  process.argv[3];
-    }
-    if (process.argv[4]){
-        pages =  process.argv[4]
-    }
     console.log(`Crawling at url ${baseURL}`);
-    await crawlPage(baseURL, currentURL, pages)
+    pages = await crawlPage(baseURL)
+    console.log(pages)
 };
 
 
