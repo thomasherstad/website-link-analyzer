@@ -61,7 +61,7 @@ async function crawlPage(baseURL, currentURL=baseURL, pages={}, alreadyCrawled=[
     let base = new URL(baseURL)
     let current = new URL(currentURL)
     
-    if (base.host != current.host) {
+    if (base.host !== current.host) {
         return pages
     }
 
